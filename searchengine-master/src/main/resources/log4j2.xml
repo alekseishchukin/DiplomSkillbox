@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration status="FATAL">
+
+    <appenders>
+        <File name="Search" fileName="logs/search.log">
+            <PatternLayout pattern="%d - [%p] - %msg%n"/>
+            <Filters>
+                <MarkerFilter marker="INPUT_HISTORY_MARKER"/>
+            </Filters>
+        </File>
+        <File name="Input_errors" fileName="logs/input_errors.log">
+            <PatternLayout pattern="%d - [%p] - %msg%n"/>
+            <Filters>
+                <MarkerFilter marker="INVALID_DATA_MARKER"/>
+            </Filters>
+        </File>
+        <File name="Errors" fileName="logs/errors.log">
+            <PatternLayout pattern="%d - %p - %l %n%m%n%n"/>
+            <Filters>
+                <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+        </File>
+    </appenders>
+
+    <loggers>
+        <root level="info">
+            <appender-ref ref="Search" level="info"/>
+            <appender-ref ref="Input_errors" level="info"/>
+            <appender-ref ref="Errors" level="error"/>
+        </root>
+    </loggers>
+
+</configuration>
