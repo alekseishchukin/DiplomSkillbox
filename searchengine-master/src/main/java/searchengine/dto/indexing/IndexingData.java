@@ -3,7 +3,7 @@ package searchengine.dto.indexing;
 import lombok.Data;
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.services.PageService;
+import searchengine.services.parsing.PageParser;
 
 import java.util.List;
 
@@ -13,6 +13,6 @@ public class IndexingData {
     private String url;
     private String siteName;
     private Site site;
-    private PageService pageService;
+    private PageParser pageParser;
     private List<Page> pageList;
 }

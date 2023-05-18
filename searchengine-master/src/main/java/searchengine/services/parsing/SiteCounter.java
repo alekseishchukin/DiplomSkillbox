@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.parsing;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +10,7 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.impl.IndexingServiceImpl;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -17,8 +18,8 @@ import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
-public class SiteService extends Thread {
-    private static final Logger LOGGER = LogManager.getLogger(SiteService.class);
+public class SiteCounter extends Thread {
+    private static final Logger LOGGER = LogManager.getLogger(SiteCounter.class);
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
@@ -27,11 +28,11 @@ public class SiteService extends Thread {
 
     @Override
     public void run() {
-        PageService pageService = new PageService(siteRepository, pageRepository,
+        PageParser pageParser = new PageParser(siteRepository, pageRepository,
                 lemmaRepository, indexRepository, site.getUrl(), site);
 
         try {
-            new ForkJoinPool(Runtime.getRuntime().availableProcessors()).submit(pageService).get();
+            new ForkJoinPool(Runtime.getRuntime().availableProcessors()).submit(pageParser).get();
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("Ошибка индексации сайта: ".concat(site.getUrl())

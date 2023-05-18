@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.parsing;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -25,8 +25,8 @@ import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 
-public class PageService extends RecursiveTask<Site> {
-    private static final Logger LOGGER = LogManager.getLogger(PageService.class);
+public class PageParser extends RecursiveTask<Site> {
+    private static final Logger LOGGER = LogManager.getLogger(PageParser.class);
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
@@ -37,9 +37,9 @@ public class PageService extends RecursiveTask<Site> {
     private Page page;
     public static boolean running = true;
 
-    public PageService(SiteRepository siteRepository, PageRepository pageRepository,
-                       LemmaRepository lemmaRepository, IndexRepository indexRepository,
-                       String url, Site site) {
+    public PageParser(SiteRepository siteRepository, PageRepository pageRepository,
+                      LemmaRepository lemmaRepository, IndexRepository indexRepository,
+                      String url, Site site) {
         this.siteRepository = siteRepository;
         this.pageRepository = pageRepository;
         this.lemmaRepository = lemmaRepository;
@@ -51,7 +51,7 @@ public class PageService extends RecursiveTask<Site> {
     @Override
     protected Site compute() {
         linkSet.add(url);
-        List<PageService> pageServiceList = new CopyOnWriteArrayList<>();
+        List<PageParser> pageParserList = new CopyOnWriteArrayList<>();
         if (!running) stopIndexing();
         String path = url.replaceFirst(site.getUrl(), "/");
         AtomicBoolean pageTestBoolean = new AtomicBoolean(false);
@@ -73,14 +73,14 @@ public class PageService extends RecursiveTask<Site> {
                     if (!link.isEmpty() && link.startsWith(url) && !link.contains("#") && pointCount.get() == 0
                             && running && !link.equals(url) && !linkSet.contains(link)) {
                         linkSet.add(link);
-                        PageService pageService = new PageService(siteRepository, pageRepository,
+                        PageParser pageParser = new PageParser(siteRepository, pageRepository,
                                 lemmaRepository, indexRepository, link, site);
-                        pageService.fork();
-                        pageServiceList.add(pageService);
+                        pageParser.fork();
+                        pageParserList.add(pageParser);
                     }
                 }
             }
-            for (PageService link : pageServiceList) {
+            for (PageParser link : pageParserList) {
                 if (!running) break;
                 link.join();
             }
@@ -116,10 +116,10 @@ public class PageService extends RecursiveTask<Site> {
                 pageParserData.setDocument(document);
                 pageRepository.saveAndFlush(page);
                 siteRepository.saveAndFlush(site);
-                LemmaService lemmaService = new LemmaService(lemmaRepository, indexRepository, pageRepository);
-                HashMap<String, Integer> lemmaMap = lemmaService.getLemmasMap(
+                LemmaFinder lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
+                HashMap<String, Integer> lemmaMap = lemmaFinder.getLemmasMap(
                         document != null ? document.toString() : null);
-                lemmaService.lemmaAndIndexSave(lemmaMap, site, page);
+                lemmaFinder.lemmaAndIndexSave(lemmaMap, site, page);
             }
         return pageParserData;
     }

@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +17,9 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.interfaces.SearchService;
+import searchengine.services.parsing.LemmaFinder;
+import searchengine.services.parsing.PageParser;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -32,17 +35,17 @@ public class SearchServiceImpl implements SearchService {
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
-    private LemmaService lemmaService;
+    private LemmaFinder lemmaFinder;
     private final SitesList sites;
 
     public SearchResponse search(String query, String url, int offset, int limit) {
-        PageService.running = true;
-        LemmaService.running = true;
+        PageParser.running = true;
+        LemmaFinder.running = true;
         LOGGER.info(INPUT_HISTORY_MARKER, "Query: ".concat(query.equals("") ? "Empty" : query)
                 .concat("; URL: ").concat(url == null ? "All sites" : url)
                 .concat("; Offset: ").concat(String.valueOf(offset))
                 .concat("; Limit: ").concat(String.valueOf(limit)));
-        lemmaService = new LemmaService(lemmaRepository, indexRepository, pageRepository);
+        lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
         if (query.equals("")) {
             SearchResponse searchResponse = new SearchResponse();
             searchResponse.setResult(false);
@@ -95,7 +98,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     public List<Lemma> getLemmaIdsByQuery(String query, String url, int indexRestriction) {
-        HashMap<String, Integer> queryLemmaMap = lemmaService.getLemmasMap(query);
+        HashMap<String, Integer> queryLemmaMap = lemmaFinder.getLemmasMap(query);
         List<String> lemmaListQuery = new ArrayList<>(queryLemmaMap.keySet());
         List<Integer> lemmaIds = lemmaRepository.getLemmaIdsByLemmaStringList(lemmaListQuery);
         return lemmaRepository.getLemmasByLemmaAndSiteIDWithRestriction(lemmaIds, getSiteIds(url), indexRestriction);
@@ -149,7 +152,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     public String createSnippet(String text, Map<String, Integer> lemmaMap) {
-        text = lemmaService.clearHtmlFromTags(text);
+        text = lemmaFinder.clearHtmlFromTags(text);
         StringBuilder builder = new StringBuilder();
         for (String lemma : lemmaMap.keySet()) {
             String firstChar = String.valueOf(lemma.charAt(0)).toUpperCase(Locale.ROOT);

@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.parsing;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -25,8 +25,8 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class LemmaService {
-    private static final Logger LOGGER = LogManager.getLogger(LemmaService.class);
+public class LemmaFinder {
+    private static final Logger LOGGER = LogManager.getLogger(LemmaFinder.class);
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
     private final PageRepository pageRepository;
@@ -123,7 +123,7 @@ public class LemmaService {
             }
             pageRepository.delete(page);
         }
-        PageParserData pageParserData = indexingData.getPageService().getJsoupDocumentAndSavePage();
+        PageParserData pageParserData = indexingData.getPageParser().getJsoupDocumentAndSavePage();
         HashMap<String, Integer> lemmasMap = getLemmasMap(pageParserData.getDocument().toString());
         lemmaAndIndexSave(lemmasMap, indexingData.getSite(), pageParserData.getPage());
         return indexingData;

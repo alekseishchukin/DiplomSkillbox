@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +14,10 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.interfaces.IndexingService;
+import searchengine.services.parsing.LemmaFinder;
+import searchengine.services.parsing.PageParser;
+import searchengine.services.parsing.SiteCounter;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -45,20 +49,20 @@ public class IndexingServiceImpl implements IndexingService {
             indexingData.setUrl(site.getUrl());
             indexingData.setSiteName(site.getName());
 
-            SiteService siteService = new SiteService(siteRepository, pageRepository,
+            SiteCounter siteCounter = new SiteCounter(siteRepository, pageRepository,
                     lemmaRepository, indexRepository);
 
             indexingData = checkingAvailabilitySiteInDB(indexingData);
             if (!indexingData.getIndexingResponse().isResult()) {
-                PageService.running = false;
-                LemmaService.running = false;
+                PageParser.running = false;
+                LemmaFinder.running = false;
                 return indexingData.getIndexingResponse();
             }
             if (indexingData.getSite() != null) {
                 siteRepository.delete(indexingData.getSite());
             }
-            siteService.createSiteDB(site.getName(), site.getUrl());
-            siteService.start();
+            siteCounter.createSiteDB(site.getName(), site.getUrl());
+            siteCounter.start();
         }
         return indexingResponse;
     }
@@ -73,8 +77,8 @@ public class IndexingServiceImpl implements IndexingService {
             indexingResponse.setResult(true);
             indexingResponse.setError("Индексация не запущена");
         }
-        PageService.running = false;
-        LemmaService.running = false;
+        PageParser.running = false;
+        LemmaFinder.running = false;
         return indexingResponse;
     }
 
@@ -86,7 +90,7 @@ public class IndexingServiceImpl implements IndexingService {
         IndexingData indexingData = checkingCorrectnessPath(path);
         if (!indexingData.getIndexingResponse().isResult()) return indexingData.getIndexingResponse();
 
-        SiteService siteService = new SiteService(siteRepository, pageRepository,
+        SiteCounter siteCounter = new SiteCounter(siteRepository, pageRepository,
                 lemmaRepository, indexRepository);
 
         indexingData = checkingAvailabilitySiteInDB(indexingData);
@@ -94,14 +98,14 @@ public class IndexingServiceImpl implements IndexingService {
         countInstances++;
 
         Site site = indexingData.getSite() != null ? indexingData.getSite() :
-                siteService.createSiteDB(indexingData.getSiteName(), indexingData.getUrl());
+                siteCounter.createSiteDB(indexingData.getSiteName(), indexingData.getUrl());
 
         indexingData.setPageList(pageRepository.getPagesByPathAndSiteId(
                 path.replaceFirst(site.getUrl(), "/"), site.getId()));
-        indexingData.setPageService(new PageService(siteRepository, pageRepository,
+        indexingData.setPageParser(new PageParser(siteRepository, pageRepository,
                 lemmaRepository, indexRepository, path, site));
-        LemmaService lemmaService = new LemmaService(lemmaRepository, indexRepository, pageRepository);
-        indexingData = lemmaService.parseLemmas(indexingData);
+        LemmaFinder lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
+        indexingData = lemmaFinder.parseLemmas(indexingData);
 
         countInstances--;
         if (!indexingData.getIndexingResponse().isResult()) return indexingData.getIndexingResponse();
@@ -121,9 +125,9 @@ public class IndexingServiceImpl implements IndexingService {
             return indexingResponse;
         }
         indexingResponse.setResult(true);
-        PageService.linkSet = new CopyOnWriteArraySet<>();
-        PageService.running = true;
-        LemmaService.running = true;
+        PageParser.linkSet = new CopyOnWriteArraySet<>();
+        PageParser.running = true;
+        LemmaFinder.running = true;
         return indexingResponse;
     }
 
