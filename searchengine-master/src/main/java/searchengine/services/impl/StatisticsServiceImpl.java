@@ -11,7 +11,7 @@ import searchengine.model.Site;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
-import searchengine.services.interfaces.StatisticsService;
+import searchengine.services.StatisticsService;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

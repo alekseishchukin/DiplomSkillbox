@@ -1,4 +1,4 @@
-package searchengine.services.parsing;
+package searchengine.dto.parsing;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;

@@ -28,13 +28,13 @@ indexing-settings:
 #      name: DIMONVIDEO
 #    - url: https://nikoartgallery.com
 #      name: Niko ART GALLERY
-#    - url: https://et-cetera.ru/mobile
-#      name: Театр «Et Cetera»
+    - url: https://et-cetera.ru/mobile
+      name: Театр «Et Cetera»
 #    - url: https://www.lutherancathedral.ru
 #      name: Кафедральный собор святых Петра и Павла
-    - url: https://dombulgakova.ru
-      name: Булгаковскiй домъ
+#    - url: https://dombulgakova.ru
+#      name: Булгаковскiй домъ
 #    - url: https://www.svetlovka.ru
 #      name: Светловка
-#    - url: https://www.lenta.ru
-#      name: Лента.ру
+    - url: https://www.lenta.ru
+      name: Лента.ру

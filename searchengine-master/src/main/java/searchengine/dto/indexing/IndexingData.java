@@ -3,7 +3,7 @@ package searchengine.dto.indexing;
 import lombok.Data;
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.services.parsing.PageParser;
+import searchengine.dto.parsing.PageParser;
 
 import java.util.List;
 

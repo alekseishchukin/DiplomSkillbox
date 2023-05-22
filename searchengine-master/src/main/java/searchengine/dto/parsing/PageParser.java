@@ -1,4 +1,4 @@
-package searchengine.services.parsing;
+package searchengine.dto.parsing;
 
 import java.io.IOException;
 import java.sql.Timestamp;

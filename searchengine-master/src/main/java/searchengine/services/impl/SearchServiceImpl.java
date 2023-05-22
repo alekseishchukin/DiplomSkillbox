@@ -17,9 +17,9 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
-import searchengine.services.interfaces.SearchService;
-import searchengine.services.parsing.LemmaFinder;
-import searchengine.services.parsing.PageParser;
+import searchengine.services.SearchService;
+import searchengine.dto.parsing.LemmaFinder;
+import searchengine.dto.parsing.PageParser;
 
 import java.util.*;
 import java.util.regex.Matcher;
