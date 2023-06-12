@@ -16,25 +16,25 @@ spring:
 
 indexing-settings:
   sites:
-    - url: http://www.playback.ru
-      name: PlayBack.ru
+#    - url: http://www.playback.ru
+#      name: PlayBack.ru
 #    - url: https://volochek.life
 #      name: Вышний Волочёк
-    - url: http://radiomv.ru
+    - url: https://radiomv.ru
       name: Милицейская волна
-#    - url: https://ipfran.ru
-#      name: Институт прикладной физики Российской академии наук
-#    - url: https://dimonvideo.ru
-#      name: DIMONVIDEO
+    - url: https://ipfran.ru
+      name: Институт прикладной физики Российской академии наук
+    - url: https://dimonvideo.ru
+      name: DIMONVIDEO
 #    - url: https://nikoartgallery.com
 #      name: Niko ART GALLERY
-    - url: https://et-cetera.ru/mobile
-      name: Театр «Et Cetera»
+#    - url: https://et-cetera.ru/mobile
+#      name: Театр «Et Cetera»
 #    - url: https://www.lutherancathedral.ru
 #      name: Кафедральный собор святых Петра и Павла
 #    - url: https://dombulgakova.ru
 #      name: Булгаковскiй домъ
 #    - url: https://www.svetlovka.ru
 #      name: Светловка
-    - url: https://www.lenta.ru
-      name: Лента.ру
+#    - url: https://lenta.ru
+#      name: Лента.ру

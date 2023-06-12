@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -135,9 +136,17 @@ public class IndexingServiceImpl implements IndexingService {
         IndexingData indexingData = new IndexingData();
         indexingData.setIndexingResponse(new IndexingResponse(true, null));
 
-        Matcher matcher = Pattern.compile("(.+//[^/]+/).*").matcher(path);
-        if (matcher.find()) {
-            indexingData.setUrl(matcher.group(1));
+        String regex = "^((http|https)://)?(w{3}.)?";
+        String destSite = path.replaceAll(regex, "");
+        String[] fistDest = (destSite.split("/"));
+
+        Set<String> sitesSet = sites.getSites()
+                .stream()
+                .map(siteConfig -> siteConfig.getUrl().replaceAll(regex, "")).collect(Collectors.toSet());
+        boolean isCorrectPage = sitesSet.contains(fistDest[0]);
+
+        if (isCorrectPage) {
+            indexingData.setUrl(path);
         } else {
             indexingData.getIndexingResponse().setResult(false);
             indexingData.getIndexingResponse().setError("Адрес страницы указан неверно. " +
@@ -148,9 +157,15 @@ public class IndexingServiceImpl implements IndexingService {
 
         boolean isSiteExist = false;
         for (searchengine.config.Site site : sites.getSites()) {
-            if (site.getUrl().equals(indexingData.getUrl())) {
+            if (indexingData.getUrl().startsWith(site.getUrl())) {
                 isSiteExist = true;
                 indexingData.setSiteName(site.getName());
+                indexingData.setUrl(path);
+                indexingData.getIndexingResponse().setResult(true);
+
+                PageParser.running = true;
+                LemmaFinder.running = true;
+                break;
             }
         }
 

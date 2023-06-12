@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
 import searchengine.dto.search.SearchData;
 import searchengine.dto.search.SearchResponse;
+import searchengine.dto.search.SuccessSearchingResponse;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
@@ -91,9 +92,11 @@ public class SearchServiceImpl implements SearchService {
             }
         }
         searchDataList.sort((o1, o2) -> Float.compare(o1.getRelevance(), o2.getRelevance()));
-        searchResponse.setResult(true);
-        searchResponse.setCount(searchDataList.size());
-        searchResponse.setData(searchDataList);
+        searchResponse = new SuccessSearchingResponse(
+                true,
+                pageIds.size(),
+                searchDataList.stream().limit(limit).toList()
+        );
         return searchResponse;
     }
 

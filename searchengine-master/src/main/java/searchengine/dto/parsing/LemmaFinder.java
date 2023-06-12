@@ -43,9 +43,10 @@ public class LemmaFinder {
 
         String clearedText = clearHtmlFromTags(text);
 
-        String[] words = clearedText.replaceAll("[^А-яЁё]+", " ")
-                .toLowerCase(Locale.ROOT).split("\\s+");
-
+        String[] words = clearedText.toLowerCase(Locale.ROOT)
+                .replaceAll("([^а-яё\\s])", " ")
+                .trim()
+                .split("\\s+");
         for (String word : words) {
             if (!running) {
                 break;
@@ -62,10 +63,12 @@ public class LemmaFinder {
     }
 
     public boolean isNecessaryWord(String word, LuceneMorphology luceneMorph) {
-        if (word.length() > 1) {
+        if (word.length() > 2) {
             List<String> wordMorphInfoList = luceneMorph.getMorphInfo(word);
             for (String wordMorphInfo : wordMorphInfoList) {
-                if (!wordMorphInfo.matches(".+[А-Я]$")) {
+                if (!wordMorphInfo.matches(".+[А-Я]$") && !wordMorphInfo.matches(".+[А-Я]$") && !wordMorphInfo.contains("СОЮЗ") && !wordMorphInfo.contains("ПРЕДЛ")
+                        && !wordMorphInfo.contains("МЕЖД") && !wordMorphInfo.contains("ЧАСТ") && !wordMorphInfo.contains("КР_ПРИЛ")
+                        && !wordMorphInfo.contains("МС")) {
                     return true;
                 }
             }

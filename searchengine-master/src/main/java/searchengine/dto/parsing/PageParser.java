@@ -68,10 +68,17 @@ public class PageParser extends RecursiveTask<Site> {
                         break;
                     }
                     String link = element.absUrl("href");
+                    boolean isFile = link.matches("(\\S+(\\.(?i)(jpg|jpeg|JPG|png|gif|bmp|pdf|xml))$)");
                     AtomicInteger pointCount = new AtomicInteger(
                             StringUtils.countMatches(link.replace(url, ""), "."));
-                    if (!link.isEmpty() && link.startsWith(url) && !link.contains("#") && pointCount.get() == 0
-                            && running && !link.equals(url) && !linkSet.contains(link)) {
+                    if (!link.isEmpty()
+                            && !isFile
+                            && (link.startsWith(url) || link.contains("/"))
+                            && !linkSet.contains(link)
+                            && !link.contains("#")
+                            && linkSet.size() <= 9_000
+                    && pointCount.get() < 9_000) {
+
                         linkSet.add(link);
                         PageParser pageParser = new PageParser(siteRepository, pageRepository,
                                 lemmaRepository, indexRepository, link, site);
@@ -92,7 +99,7 @@ public class PageParser extends RecursiveTask<Site> {
         PageParserData pageParserData = new PageParserData();
         if (url.replaceFirst(site.getUrl(), "").startsWith("?")) return pageParserData;
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             LOGGER.error("Поток прерван: " + Thread.currentThread().getName() + " - " + url);
             pageParserData.setError(e.getMessage());
@@ -108,7 +115,7 @@ public class PageParser extends RecursiveTask<Site> {
         if (connection.response().statusCode() == 200) {
                 page = new Page();
                 page.setSite(site);
-                page.setPath(url.replaceFirst(site.getUrl(), "/"));
+                page.setPath(url.replaceFirst(site.getUrl(), " "));
                 page.setCode(connection.response().statusCode());
                 page.setContent(document != null ? document.toString() : null);
                 site.setStatusTime(new Timestamp(new Date().getTime()).toString());
