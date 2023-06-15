@@ -159,8 +159,8 @@ public class SearchServiceImpl implements SearchService {
         StringBuilder builder = new StringBuilder();
         for (String lemma : lemmaMap.keySet()) {
             String firstChar = String.valueOf(lemma.charAt(0)).toUpperCase(Locale.ROOT);
-            String regex = " (.{1,30})(".concat(lemma).concat("|")
-                    .concat(lemma.replaceFirst(String.valueOf(lemma.charAt(0)), firstChar)).concat(")(.{1,30} )");
+            String regex = " (.{1,100})(".concat(lemma).concat("|")
+                    .concat(lemma.replaceFirst(String.valueOf(lemma.charAt(0)), firstChar)).concat(")(.{1,100} )");
             Matcher matcher = Pattern.compile(regex).matcher(text);
             if (matcher.find()) {
                 String snippet = " ..".concat(matcher.group(1)).concat("<b>").concat(matcher.group(2))
