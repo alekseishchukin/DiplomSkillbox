@@ -38,7 +38,7 @@ public class SiteCounter extends Thread {
             LOGGER.error("Ошибка индексации сайта: ".concat(site.getUrl())
                     .concat(System.lineSeparator()).concat(e.getMessage()));
             site.setStatusTime(new Timestamp(new Date().getTime()).toString());
-            site.setLastError("Ошибка индексации сайта");
+            site.setLastError("Ошибка индексации сайта: ".concat(site.getUrl()));
             site.setStatus(IndexingStatus.FAILED);
         }
 

@@ -128,7 +128,7 @@ public class LemmaFinder {
         }
         PageParserData pageParserData = indexingData.getPageParser().getJsoupDocumentAndSavePage();
         HashMap<String, Integer> lemmasMap = getLemmasMap(pageParserData.getDocument().toString());
-        lemmaAndIndexSave(lemmasMap, indexingData.getSite(), pageParserData.getPage());
+        lemmaAndIndexSave(lemmasMap, indexingData.getPageParser().getPage().getSite(), pageParserData.getPage());
         return indexingData;
     }
 

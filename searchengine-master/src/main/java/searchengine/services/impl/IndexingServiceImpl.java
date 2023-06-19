@@ -9,22 +9,21 @@ import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingData;
 import searchengine.dto.indexing.IndexingResponse;
-import searchengine.model.*;
+import searchengine.dto.parsing.LemmaFinder;
+import searchengine.dto.parsing.PageParser;
+import searchengine.dto.parsing.SiteCounter;
+import searchengine.model.IndexingStatus;
+import searchengine.model.Site;
 import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.IndexingService;
-import searchengine.dto.parsing.LemmaFinder;
-import searchengine.dto.parsing.PageParser;
-import searchengine.dto.parsing.SiteCounter;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +74,7 @@ public class IndexingServiceImpl implements IndexingService {
             indexingResponse.setResult(true);
             indexingResponse.setError(null);
         } else {
-            indexingResponse.setResult(true);
+            indexingResponse.setResult(false);
             indexingResponse.setError("Индексация не запущена");
         }
         PageParser.running = false;
@@ -102,7 +101,7 @@ public class IndexingServiceImpl implements IndexingService {
                 siteCounter.createSiteDB(indexingData.getSiteName(), indexingData.getUrl());
 
         indexingData.setPageList(pageRepository.getPagesByPathAndSiteId(
-                path.replaceFirst(site.getUrl(), "/"), site.getId()));
+                path, site.getId()));
         indexingData.setPageParser(new PageParser(siteRepository, pageRepository,
                 lemmaRepository, indexRepository, path, site));
         LemmaFinder lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
@@ -126,6 +125,7 @@ public class IndexingServiceImpl implements IndexingService {
             return indexingResponse;
         }
         indexingResponse.setResult(true);
+        indexingResponse.setError(null);
         PageParser.linkSet = new CopyOnWriteArraySet<>();
         PageParser.running = true;
         LemmaFinder.running = true;
@@ -135,40 +135,27 @@ public class IndexingServiceImpl implements IndexingService {
     public IndexingData checkingCorrectnessPath(String path) {
         IndexingData indexingData = new IndexingData();
         indexingData.setIndexingResponse(new IndexingResponse(true, null));
-
-        String regex = "^((http|https)://)?(w{3}.)?";
-        String destSite = path.replaceAll(regex, "");
-        String[] fistDest = (destSite.split("/"));
-
-        Set<String> sitesSet = sites.getSites()
-                .stream()
-                .map(siteConfig -> siteConfig.getUrl().replaceAll(regex, "")).collect(Collectors.toSet());
-        boolean isCorrectPage = sitesSet.contains(fistDest[0]);
-
-        if (isCorrectPage) {
-            indexingData.setUrl(path);
-        } else {
+        boolean isCorrectPage = path.matches("^((http|https)://)?(w{3}.)?" +
+                "[a-z0-9]+(\\.)([a-zA-Z0-9]{2,}\\/)+([a-zA-Z0-9]{2,})(\\/|.html?)");
+        if (!isCorrectPage) {
             indexingData.getIndexingResponse().setResult(false);
             indexingData.getIndexingResponse().setError("Адрес страницы указан неверно. " +
                     "Пример: https://example.com/news/");
             LOGGER.info(INVALID_DATA_MARKER, "Недопустимый адрес: " + path);
             return indexingData;
         }
-
         boolean isSiteExist = false;
         for (searchengine.config.Site site : sites.getSites()) {
-            if (indexingData.getUrl().startsWith(site.getUrl())) {
+            if (path.startsWith(site.getUrl())) {
                 isSiteExist = true;
                 indexingData.setSiteName(site.getName());
                 indexingData.setUrl(path);
                 indexingData.getIndexingResponse().setResult(true);
-
+                site.setUrl(path);
                 PageParser.running = true;
                 LemmaFinder.running = true;
-                break;
             }
         }
-
         if (!isSiteExist) {
             indexingData.getIndexingResponse().setResult(false);
             indexingData.getIndexingResponse().setError("Данная страница находится за пределами сайтов, " +

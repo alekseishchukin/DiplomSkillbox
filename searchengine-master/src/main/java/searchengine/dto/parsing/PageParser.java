@@ -113,21 +113,26 @@ public class PageParser extends RecursiveTask<Site> {
             pageParserData.setError(e.getMessage());
         }
         if (connection.response().statusCode() == 200) {
-                page = new Page();
-                page.setSite(site);
-                page.setPath(url.replaceFirst(site.getUrl(), " "));
-                page.setCode(connection.response().statusCode());
-                page.setContent(document != null ? document.toString() : null);
-                site.setStatusTime(new Timestamp(new Date().getTime()).toString());
-                pageParserData.setPage(page);
-                pageParserData.setDocument(document);
-                pageRepository.saveAndFlush(page);
-                siteRepository.saveAndFlush(site);
-                LemmaFinder lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
-                HashMap<String, Integer> lemmaMap = lemmaFinder.getLemmasMap(
-                        document != null ? document.toString() : null);
-                lemmaFinder.lemmaAndIndexSave(lemmaMap, site, page);
+            page = new Page();
+            page.setSite(site);
+
+            if (url.indexOf("/", 10) > 1) {
+                page.setPath(url.substring(url.indexOf("/", 10)));
+            } else {
+                page.setPath(url.replaceFirst(site.getUrl(), ""));
             }
+            page.setCode(connection.response().statusCode());
+            page.setContent(document != null ? document.toString() : null);
+            site.setStatusTime(new Timestamp(new Date().getTime()).toString());
+            pageParserData.setPage(page);
+            pageParserData.setDocument(document);
+            pageRepository.saveAndFlush(page);
+            siteRepository.saveAndFlush(site);
+            LemmaFinder lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
+            HashMap<String, Integer> lemmaMap = lemmaFinder.getLemmasMap(
+                    document != null ? document.toString() : null);
+            lemmaFinder.lemmaAndIndexSave(lemmaMap, site, page);
+        }
         return pageParserData;
     }
 
