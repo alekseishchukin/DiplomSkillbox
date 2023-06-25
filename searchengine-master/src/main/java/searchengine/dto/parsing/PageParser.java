@@ -105,33 +105,28 @@ public class PageParser extends RecursiveTask<Site> {
             pageParserData.setError(e.getMessage());
         }
         Connection connection = Jsoup.connect(url).ignoreHttpErrors(true).ignoreContentType(true);
-        Document document = null;
         try {
-            document = connection.get();
-        } catch (IOException e) {
-            LOGGER.error("Ошибка подключения: " + url + " - " + e.getMessage());
-            pageParserData.setError(e.getMessage());
-        }
-        if (connection.response().statusCode() == 200) {
+            Document document = connection.get();
             page = new Page();
             page.setSite(site);
-
             if (url.indexOf("/", 10) > 1) {
                 page.setPath(url.substring(url.indexOf("/", 10)));
             } else {
                 page.setPath(url.replaceFirst(site.getUrl(), ""));
             }
             page.setCode(connection.response().statusCode());
-            page.setContent(document != null ? document.toString() : null);
+            page.setContent(document.toString());
             site.setStatusTime(new Timestamp(new Date().getTime()).toString());
             pageParserData.setPage(page);
             pageParserData.setDocument(document);
             pageRepository.saveAndFlush(page);
             siteRepository.saveAndFlush(site);
             LemmaFinder lemmaFinder = new LemmaFinder(lemmaRepository, indexRepository, pageRepository);
-            HashMap<String, Integer> lemmaMap = lemmaFinder.getLemmasMap(
-                    document != null ? document.toString() : null);
+            HashMap<String, Integer> lemmaMap = lemmaFinder.getLemmasMap(document.toString());
             lemmaFinder.lemmaAndIndexSave(lemmaMap, site, page);
+        } catch (IOException e) {
+            LOGGER.error("Ошибка подключения: " + url + " - " + e.getMessage());
+            pageParserData.setError(e.getMessage());
         }
         return pageParserData;
     }
